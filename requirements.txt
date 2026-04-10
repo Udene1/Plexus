@@ -1,0 +1,12 @@
+langgraph
+langchain
+langchain-google-genai
+sqlalchemy
+aiosqlite
+pydantic
+pandas
+sympy
+numpy
+unstructured
+chromadb
+python-dotenv
