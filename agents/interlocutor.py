@@ -5,10 +5,13 @@ async def interlocutor_node(state: CampaignState):
     """
     Interlocutor Agent: Pauses the graph, shows insights, and asks for user input.
     """
-    print("\n" + "="*50)
-    print("PLEXUS INTERLOCUTOR - INSIGHTS WAVE COMPLETE")
-    print(f"Current Focus: {state.hypotheses[state.current_focus_id].content}")
-    print(f"Current Probability: {state.hypotheses[state.current_focus_id].probability:.2f}")
+    focus_id = state.current_focus_id
+    if not focus_id or focus_id not in state.hypotheses:
+        print("Interlocutor: No active focus to display.")
+        return state
+        
+    print(f"Current Focus: {state.hypotheses[focus_id].content}")
+    print(f"Current Probability: {state.hypotheses[focus_id].probability:.2f}")
     
     recent_evidence = [e for e in state.evidence if e.hypothesis_id == state.current_focus_id][-3:]
     print("\nRecent Evidence:")

@@ -1,6 +1,6 @@
 from typing import Dict
-from ..schemas import CampaignState, ProbabilityHistory
-from ..config import Config
+from .schemas import CampaignState, ProbabilityHistory
+from .config import Config
 
 async def aggregator_node(state: CampaignState):
     """

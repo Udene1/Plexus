@@ -1,5 +1,5 @@
-from .archivist import Archivist
-from .schemas import CampaignState
+from ..archivist import Archivist
+from ..schemas import CampaignState
 
 archivist = Archivist()
 

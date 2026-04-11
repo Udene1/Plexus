@@ -1,6 +1,5 @@
 from typing import TypedDict, List, Dict, Any, Annotated
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite import SqliteSaver
 from .schemas import CampaignState
 from .agents.supervisor import supervisor_node
 from .agents.specialist import specialist_node
@@ -15,10 +14,10 @@ from .config import Config
 class GraphState(TypedDict):
     state: CampaignState
 
-def create_graph():
+def create_graph(checkpointer=None):
     workflow = StateGraph(GraphState)
 
-    # Define nodes - wrapping them to match GraphState
+    # Define nodes
     async def wrap_supervisor(x): return {"state": await supervisor_node(x["state"])}
     async def wrap_specialist(x): return {"state": await specialist_node(x["state"])}
     async def wrap_blindspot(x): return {"state": await blindspot_node(x["state"])}
@@ -70,6 +69,4 @@ def create_graph():
     
     workflow.add_edge("converger", END)
 
-    # Add persistence
-    memory = SqliteSaver.from_conn_string(Config.CHECKPOINT_DB_PATH)
-    return workflow.compile(checkpointer=memory)
+    return workflow.compile(checkpointer=checkpointer)

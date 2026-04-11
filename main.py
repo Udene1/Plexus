@@ -5,48 +5,41 @@ import sys
 from .schemas import CampaignState
 from .graph import create_graph
 from .config import Config
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 async def run_campaign(query: str = None, resume_id: str = None):
-    # Initialize state
     if resume_id:
-        # In a full implementation, we'd load this from Archivist
-        # For now, we mock the resume functionality
         print(f"Resuming campaign: {resume_id}")
         campaign_id = resume_id
-        # query = ... (load from DB)
-        return
-    
-    campaign_id = str(uuid.uuid4())[:12]
-    print(f"Starting new campaign: {campaign_id}")
+    else:
+        campaign_id = str(uuid.uuid4())[:12]
+        print(f"Starting new campaign: {campaign_id}")
     
     state = CampaignState(
         campaign_id=campaign_id,
         query=query or "Undefined Research Query"
     )
     
-    graph = create_graph()
+    config = {"configurable": {"thread_id": campaign_id}}
     
-    # Run the graph
-    current_state = {"state": state}
-    
-    # Note: LangGraph nodes must be awaited properly if they are async.
-    # The lambda wrappers in graph.py need to handle this.
-    # Fixing graph.py wrappers...
-    
-    try:
-        async for output in graph.astream(current_state):
-            # output is a dict like {'node_name': {'state': ...}}
-            for node_name, node_output in output.items():
-                print(f"--- Node '{node_name}' Finished ---")
-                current_state = node_output
+    # Use AsyncSqliteSaver as an async context manager
+    async with AsyncSqliteSaver.from_conn_string(Config.CHECKPOINT_DB_PATH) as saver:
+        graph = create_graph(checkpointer=saver)
+        
+        current_state = {"state": state}
+        try:
+            async for output in graph.astream(current_state, config=config):
+                for node_name, node_output in output.items():
+                    print(f"--- Node '{node_name}' Finished ---")
+                    current_state = node_output
+                    if current_state["state"].is_finished:
+                        break
                 if current_state["state"].is_finished:
                     break
-            if current_state["state"].is_finished:
-                break
-    except Exception as e:
-        print(f"Graph execution failed: {e}")
-        import traceback
-        traceback.print_exc()
+        except Exception as e:
+            print(f"Graph execution failed: {e}")
+            import traceback
+            traceback.print_exc()
 
 def main():
     parser = argparse.ArgumentParser(description="Plexus Research Engine")

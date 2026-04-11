@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from ..schemas import CampaignState, Hypothesis, Decomposition
@@ -17,8 +18,20 @@ async def supervisor_node(state: CampaignState):
         
         Provide structured JSON output with 'hypotheses' (list of strings) and 'reasoning'.
         """
-        response = await llm.with_structured_output(Decomposition).ainvoke(prompt)
-        
+        for i in range(3):
+            response = await llm.with_structured_output(Decomposition).ainvoke(prompt)
+            if response:
+                break
+            print(f"Supervisor retry {i+1} due to empty response...")
+            await asyncio.sleep(5)
+            
+        if not response:
+            print("Error: Supervisor failed after retries. Using fallback hypothesis.")
+            h_id = "fallback"
+            state.hypotheses[h_id] = Hypothesis(id=h_id, content="General research on " + state.query, depth=0, probability=1.0)
+            state.current_focus_id = h_id
+            return state
+            
         new_hypotheses = {}
         for h_content in response.hypotheses:
             h_id = str(uuid.uuid4())[:8]

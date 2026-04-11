@@ -27,6 +27,7 @@ async def specialist_node(state: CampaignState):
     tasks = []
     for angle in angles:
         tasks.append(run_specialist(angle, hypothesis.content, state.query))
+        await asyncio.sleep(12) # Stagger to stay under 5 RPM (60/5 = 12s)
     
     outputs = await asyncio.gather(*tasks)
     
