@@ -1,11 +1,10 @@
 import uuid
 import asyncio
-from langchain_google_genai import ChatGoogleGenerativeAI
 from textplexus.schemas import CampaignState, SpecialistOutput, Evidence
-from textplexus.config import Config
+from textplexus.config import Config, get_llm
 from textplexus.tools import web_search
 
-llm = ChatGoogleGenerativeAI(model=Config.MODEL_NAME, google_api_key=Config.GEMINI_API_KEY)
+llm = get_llm()
 
 async def specialist_node(state: CampaignState):
     """

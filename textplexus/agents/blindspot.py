@@ -1,9 +1,8 @@
 import uuid
-from langchain_google_genai import ChatGoogleGenerativeAI
 from textplexus.schemas import CampaignState, Evidence, SpecialistOutput
-from textplexus.config import Config
+from textplexus.config import Config, get_llm
 
-llm = ChatGoogleGenerativeAI(model=Config.MODEL_NAME, google_api_key=Config.GEMINI_API_KEY)
+llm = get_llm()
 
 async def blindspot_node(state: CampaignState):
     """

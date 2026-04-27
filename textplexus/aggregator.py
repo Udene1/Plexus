@@ -24,14 +24,18 @@ async def aggregator_node(state: CampaignState):
     
     for e in evidence_for_focus:
         impact = 0.0
-        if "VIOLATION" in e.content:
-            impact = -0.8 # Severe penalty for physics violation
+        
+        # Use metadata violation_score if present (from Physics Verifier)
+        if e.metadata.get("violation_score", 0) > 0.3:
+            impact = -0.8 * e.metadata["violation_score"]
+        elif "VIOLATION" in e.content:
+            impact = -0.8  # Fallback string match
         elif "User Input" in e.source:
             impact = 0.2
         elif "BlindSpot" in e.source:
-            impact = -0.1 # Blindspots usually introduce doubt
+            impact = -0.1  # Blindspots introduce doubt
         else:
-            impact = 0.05 # Default small positive evidence from specialists
+            impact = 0.05  # Default positive evidence from specialists
             
         # Bayesian likelihood factor
         total_likelihood_ratio *= (1.0 + impact)

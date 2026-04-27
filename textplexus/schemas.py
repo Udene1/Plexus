@@ -10,6 +10,7 @@ class Hypothesis(BaseModel):
     probability: float = 0.0
     status: str = "open"  # open, exploring, converged, pruned
     children_ids: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class Evidence(BaseModel):
     id: str
@@ -17,6 +18,7 @@ class Evidence(BaseModel):
     source: str
     content: str
     timestamp: datetime = Field(default_factory=datetime.now)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class ProbabilityHistory(BaseModel):
     hypothesis_id: str
@@ -50,5 +52,6 @@ class PhysicsCheckResult(BaseModel):
     valid: bool
     violated_law: Optional[str] = None
     quantitative_constraint: Optional[str] = None
+    suggested_code: Optional[str] = Field(default=None, description="Python code to execute in sandbox for verification")
     suggested_adjustment: Optional[str] = None
     reasoning: str

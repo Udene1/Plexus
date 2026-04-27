@@ -1,11 +1,12 @@
 langgraph
 langchain
 langchain-google-genai
-sqlalchemy
+langchain-openai
 aiosqlite
 pydantic
 pandas
 sympy
+scipy
 numpy
 unstructured
 chromadb
